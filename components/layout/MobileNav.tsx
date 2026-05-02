@@ -1,0 +1,41 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, Film, PlusCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+export function MobileNav() {
+  const pathname = usePathname();
+
+  const navLinks = [
+    { name: 'Home', href: '/', icon: Home },
+    { name: 'Movies', href: '/movies', icon: Film },
+    { name: 'Request', href: '/request', icon: PlusCircle },
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 bg-black/70 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-around h-14 shadow-2xl">
+      {navLinks.map((link) => {
+        const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+        const Icon = link.icon;
+        return (
+          <Link 
+            key={link.name} 
+            href={link.href}
+            className={cn(
+              "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
+              isActive ? "text-accent-red" : "text-text-secondary"
+            )}
+          >
+            <Icon size={18} />
+            <span className="text-[10px] font-medium">{link.name}</span>
+            {isActive && (
+              <span className="absolute bottom-1 w-1 h-1 rounded-full bg-accent-red" />
+            )}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
