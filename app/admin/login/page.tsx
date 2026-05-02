@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import Image from 'next/image';
 
 import { adminLoginEdge } from '@/lib/api';
 
@@ -40,7 +41,13 @@ export default function AdminLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4">
       <div className="glass-panel p-8 md:p-12 rounded-3xl w-full max-w-md text-center">
         <div className="flex flex-col items-center mb-8">
-          <img src="/logo.svg" alt="IbfMovies Logo" className="w-12 h-12 mb-4" />
+          <Image 
+            src="/logo.svg" 
+            alt="IbfMovies Logo" 
+            width={48} 
+            height={48} 
+            className="mb-4"
+          />
           <h1 className="text-2xl font-bold">Admin Panel</h1>
         </div>
         

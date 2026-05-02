@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { MobileHeader } from "@/components/layout/MobileHeader";
 import Script from "next/script";
 import { useEffect } from "react";
+import { initTelegramApp } from "@/lib/telegram";
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -20,14 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   useEffect(() => {
-    if (typeof window !== 'undefined' && 
-        window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp
-      tg.ready()
-      tg.expand()
-      tg.setHeaderColor('#080808')
-      tg.setBackgroundColor('#080808')
-    }
+    initTelegramApp();
   }, [])
 
   return (
