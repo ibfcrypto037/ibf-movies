@@ -34,10 +34,7 @@ export function RequestForm() {
     
     showAd(async () => {
       try {
-        const result = await submitRequest(
-          movieName.trim(), 
-          language
-        )
+        await submitRequest(movieName.trim(), language)
         setShowSuccess(true)
         setIsUnlocked(false)
         setMovieName('')
