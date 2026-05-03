@@ -16,7 +16,7 @@ export function RequestForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { isUnlocked, watchAd, reset } = useAdUnlock();
+  const { isUnlocked, setIsUnlocked, watchAd, reset } = useAdUnlock();
   const { languages, loading: langLoading } = useLanguages();
 
   useEffect(() => {
@@ -29,19 +29,23 @@ export function RequestForm() {
     return () => clearTimeout(timeout);
   }, [showSuccess]);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit() {
     if (!movieName.trim() || !language) return
-    if (!isUnlocked) return
-    setIsSubmitting(true)
-
-    showAd(() => {
-      submitRequest(movieName.trim(), language)
-      setShowSuccess(true)
-      reset() // isUnlocked = false
-      setMovieName('')
-      setLanguage('')
-      setIsSubmitting(false)
+    
+    showAd(async () => {
+      try {
+        const result = await submitRequest(
+          movieName.trim(), 
+          language
+        )
+        setShowSuccess(true)
+        setIsUnlocked(false)
+        setMovieName('')
+        setLanguage('')
+        setTimeout(() => setShowSuccess(false), 3000)
+      } catch {
+        setError('Failed to submit. Try again.')
+      }
     })
   }
 
@@ -73,7 +77,7 @@ export function RequestForm() {
           <p className="text-sm text-gray-400">Can&apos;t find your favorite film? Let us know and we&apos;ll add it within 24 hours!</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">Movie Name</label>
             <input 
@@ -110,12 +114,12 @@ export function RequestForm() {
           <AdUnlock isUnlocked={isUnlocked} onUnlock={watchAd} />
 
           <button 
-            type="submit"
-            disabled={!isUnlocked || isSubmitting || !movieName || !language}
+            type="button"
+            onClick={handleSubmit}
+            disabled={!isUnlocked || !movieName || !language}
             className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl py-3 shadow-[0_4px_15px_rgba(229,9,20,0.3)] hover:shadow-[0_6px_20px_rgba(229,9,20,0.4)] transition-all disabled:opacity-50 disabled:hover:shadow-none flex items-center justify-center gap-2 active:scale-95 transition-transform duration-100"
           >
-            {isSubmitting && <LoadingSpinner size={20} />}
-            {isSubmitting ? 'Submitting...' : 'Submit Request →'}
+            Submit Request →
           </button>
         </form>
       </div>

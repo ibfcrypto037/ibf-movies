@@ -14,5 +14,5 @@ export function useAdUnlock() {
     setIsUnlocked(false);
   };
 
-  return { isUnlocked, watchAd, reset };
+  return { isUnlocked, setIsUnlocked, watchAd, reset };
 }
