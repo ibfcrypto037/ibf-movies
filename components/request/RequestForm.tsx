@@ -31,18 +31,12 @@ export function RequestForm() {
 
   function handleSubmit() {
     if (!movieName.trim() || !language) return
-    
-    showAd(async () => {
-      try {
-        await submitRequest(movieName.trim(), language)
-        setShowSuccess(true)
-        setIsUnlocked(false)
-        setMovieName('')
-        setLanguage('')
-        setTimeout(() => setShowSuccess(false), 3000)
-      } catch {
-        setError('Failed to submit. Try again.')
-      }
+    showAd(() => {
+      submitRequest(movieName.trim(), language)
+      setShowSuccess(true)
+      setIsUnlocked(false)
+      setMovieName('')
+      setLanguage('')
     })
   }
 
