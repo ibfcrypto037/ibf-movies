@@ -15,15 +15,27 @@ export function DownloadButtons({ links }: { links: DownloadLinks }) {
   const { watchAd } = useAdUnlock();
 
   const handleDownload = async (quality: DownloadQuality, url: string) => {
-    if (!url || url === '#' || url === '') {
-      setToast({ message: 'Download link not available', type: 'error', isVisible: true });
-      return;
-    }
+    if (!url || url === '#' || url === '') return;
+    if (loading) return;
     setLoading(quality);
+
     try {
+      // Open link in new tab FIRST
+      // This prevents browser popup blocking
+      const newWindow = window.open('', '_blank', 'noopener,noreferrer');
+
+      // Then show ad
       await showRewardedInterstitial();
-      window.open(url, '_blank', 'noopener,noreferrer');
+
+      // After ad set the URL in already opened tab
+      if (newWindow) {
+        newWindow.location.href = url;
+      } else {
+        // Fallback if popup was blocked
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
     } catch {
+      // If anything fails still redirect
       window.open(url, '_blank', 'noopener,noreferrer');
     } finally {
       setLoading(null);

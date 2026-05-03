@@ -1,27 +1,41 @@
+let isAdCurrentlyShowing = false;
+
 // Rewarded Interstitial Ad
 // Used for: Download buttons, Support button,
 // Watch Ad to Unlock, Submit Request
 export async function showRewardedInterstitial():
   Promise<boolean> {
+  if (isAdCurrentlyShowing) return Promise.resolve(true);
+  isAdCurrentlyShowing = true;
+
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(true), 5000)
+    const timeout = setTimeout(() => {
+      isAdCurrentlyShowing = false;
+      resolve(true);
+    }, 5000)
     try {
       if (typeof show_10954902 !== 'undefined') {
         show_10954902()
           .then(() => {
             clearTimeout(timeout)
+            isAdCurrentlyShowing = false;
             resolve(true)
           })
           .catch(() => {
             clearTimeout(timeout)
+            isAdCurrentlyShowing = false;
             resolve(true)
           })
       } else {
         clearTimeout(timeout)
-        setTimeout(() => resolve(true), 1500)
+        setTimeout(() => {
+          isAdCurrentlyShowing = false;
+          resolve(true)
+        }, 1500)
       }
     } catch {
       clearTimeout(timeout)
+      isAdCurrentlyShowing = false;
       resolve(true)
     }
   })
@@ -31,25 +45,37 @@ export async function showRewardedInterstitial():
 // Used for: Movies nav tab, Request nav tab
 export async function showRewardedPopup():
   Promise<boolean> {
+  if (isAdCurrentlyShowing) return Promise.resolve(true);
+  isAdCurrentlyShowing = true;
+
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(true), 5000)
+    const timeout = setTimeout(() => {
+      isAdCurrentlyShowing = false;
+      resolve(true);
+    }, 5000)
     try {
       if (typeof show_10954902 !== 'undefined') {
         show_10954902('pop')
           .then(() => {
             clearTimeout(timeout)
+            isAdCurrentlyShowing = false;
             resolve(true)
           })
           .catch(() => {
             clearTimeout(timeout)
+            isAdCurrentlyShowing = false;
             resolve(true)
           })
       } else {
         clearTimeout(timeout)
-        setTimeout(() => resolve(true), 1500)
+        setTimeout(() => {
+          isAdCurrentlyShowing = false;
+          resolve(true)
+        }, 1500)
       }
     } catch {
       clearTimeout(timeout)
+      isAdCurrentlyShowing = false;
       resolve(true)
     }
   })

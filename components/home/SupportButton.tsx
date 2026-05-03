@@ -1,7 +1,7 @@
 'use client';
 
 import { Heart } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { showRewardedInterstitial } from '@/lib/monetag';
 import { useAdUnlock } from '@/hooks/useAdUnlock';
@@ -11,19 +11,22 @@ export function SupportButton() {
   const { watchAd } = useAdUnlock();
 
   const [isLoading, setIsLoading] = useState(false);
+  const isShowingAd = useRef(false);
   
   const handleSupport = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
+    if (isShowingAd.current) return
+    isShowingAd.current = true
+    setIsLoading(true)
     try {
-      await showRewardedInterstitial();
-      setShowThanks(true);
-      setTimeout(() => setShowThanks(false), 4000);
+      await showRewardedInterstitial()
+      setShowThanks(true)
+      setTimeout(() => setShowThanks(false), 4000)
     } catch {
-      setShowThanks(true);
-      setTimeout(() => setShowThanks(false), 4000);
+      setShowThanks(true)
+      setTimeout(() => setShowThanks(false), 4000)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
+      isShowingAd.current = false
     }
   };
 
@@ -37,7 +40,8 @@ export function SupportButton() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             onClick={handleSupport}
-            className="absolute flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-accent-red to-accent-red text-white font-bold shadow-lg hover:shadow-[0_0_20px_rgba(229,9,20,0.4)] active:scale-95 transition-transform duration-100"
+            disabled={isLoading || isShowingAd.current}
+            className="absolute flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-accent-red to-accent-red text-white font-bold shadow-lg hover:shadow-[0_0_20px_rgba(229,9,20,0.4)] active:scale-95 transition-transform duration-100 disabled:opacity-70"
           >
             <Heart fill="currentColor" />
             Support Us

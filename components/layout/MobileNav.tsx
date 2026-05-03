@@ -13,7 +13,7 @@ export function MobileNav() {
 
   const router = useRouter();
   const lastAdTime = useRef<number>(0);
-  const AD_COOLDOWN = 3 * 60 * 1000; // 3 minutes
+  const AD_COOLDOWN = 45 * 1000; // 45 seconds
 
   const navLinks = [
     { name: 'Home', href: '/', icon: Home },

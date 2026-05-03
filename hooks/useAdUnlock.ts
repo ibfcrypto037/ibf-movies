@@ -9,11 +9,23 @@ export function useAdUnlock() {
   const watchAd = async () => {
     if (isLoading || isUnlocked) return
     setIsLoading(true)
+
+    // Wait for SDK to load if not ready
+    let attempts = 0
+    while (typeof show_10954902 === 'undefined' && attempts < 10) {
+      await new Promise(r => setTimeout(r, 500))
+      attempts++
+    }
+
     try {
-      await showRewardedInterstitial()
-      setIsUnlocked(true)
+      if (typeof show_10954902 !== 'undefined') {
+        await showRewardedInterstitial()
+        setIsUnlocked(true)
+      } else {
+        // SDK not loaded - use timer fallback
+        setTimeLeft(5)
+      }
     } catch {
-      // Start 5 second fallback timer
       setTimeLeft(5)
     } finally {
       setIsLoading(false)
