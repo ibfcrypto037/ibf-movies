@@ -5,11 +5,10 @@ import { motion } from 'framer-motion';
 
 interface AdUnlockProps {
   isUnlocked: boolean;
-  isLoading: boolean;
   onUnlock: () => void;
 }
 
-export function AdUnlock({ isUnlocked, isLoading, onUnlock }: AdUnlockProps) {
+export function AdUnlock({ isUnlocked, onUnlock }: AdUnlockProps) {
   if (isUnlocked) {
     return (
       <motion.div 
@@ -32,10 +31,9 @@ export function AdUnlock({ isUnlocked, isLoading, onUnlock }: AdUnlockProps) {
       <button 
         type="button"
         onClick={onUnlock}
-        disabled={isLoading}
         className="w-full bg-white/10 border border-white/20 text-gray-300 rounded-xl py-3 text-sm transition-colors disabled:opacity-50 active:scale-95 transition-transform duration-100"
       >
-        {isLoading ? 'Watching Ad...' : '▶ Watch Ad to Unlock'}
+        ▶ Watch Ad to Unlock
       </button>
     </div>
   );

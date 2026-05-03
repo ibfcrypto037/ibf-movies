@@ -7,14 +7,14 @@ import { Search, Film, Home, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { showRewardedPopup } from '@/lib/monetag';
+import { showPopupAd } from '@/lib/monetag';
 
 export function Navbar() {
   const pathname = usePathname();
 
   const router = useRouter();
   const lastAdTime = useRef<number>(0);
-  const AD_COOLDOWN = 45 * 1000; // 45 seconds
+  const AD_COOLDOWN = 45 * 1000;
 
   if (pathname.startsWith('/admin')) return null;
 
@@ -24,19 +24,13 @@ export function Navbar() {
     { name: 'Request', href: '/request', icon: PlusCircle },
   ];
 
-  async function handleNavClick(tabName: string, href: string) {
-    router.push(href);
-
-    // Show popup ad only on Movies and Request tabs
+  function handleNavClick(tabName: string, href: string) {
+    router.push(href)
     if (tabName === 'Movies' || tabName === 'Request') {
-      const now = Date.now();
+      const now = Date.now()
       if (now - lastAdTime.current > AD_COOLDOWN) {
-        lastAdTime.current = now;
-        try {
-          await showRewardedPopup();
-        } catch {
-          // Silently fail, navigation already happened
-        }
+        lastAdTime.current = now
+        showPopupAd(() => {})
       }
     }
   }

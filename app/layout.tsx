@@ -7,7 +7,6 @@ import { MobileHeader } from "@/components/layout/MobileHeader";
 import Script from "next/script";
 import { useEffect } from "react";
 import { initTelegramApp } from "@/lib/telegram";
-import { initInAppInterstitial } from "@/lib/monetag";
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -23,12 +22,20 @@ export default function RootLayout({
 }>) {
   useEffect(() => {
     initTelegramApp();
-    // Wait 10 seconds so user can browse first
-    // Then start automatic background ads
-    const timeout = setTimeout(() => {
-      initInAppInterstitial()
+    setTimeout(() => {
+      if (typeof show_10954902 !== 'undefined') {
+        show_10954902({
+          type: 'inApp',
+          inAppSettings: {
+            frequency: 2,
+            capping: 0.1,
+            interval: 30,
+            timeout: 8,
+            everyPage: false
+          }
+        })
+      }
     }, 10000)
-    return () => clearTimeout(timeout)
   }, [])
 
   return (

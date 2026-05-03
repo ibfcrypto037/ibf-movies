@@ -6,12 +6,12 @@ import { useLanguages } from '@/hooks/useLanguages';
 import { AdUnlock } from '@/components/request/AdUnlock';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { PageTransition } from '@/components/layout/PageTransition';
+import { showAd } from '@/lib/monetag';
 
 export default function RequestPage() {
   const [movieName, setMovieName] = useState('');
   const [language, setLanguage] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isLoadingAd, setIsLoadingAd] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -19,12 +19,9 @@ export default function RequestPage() {
   const { languages, loading: langLoading } = useLanguages();
 
   const handleUnlock = () => {
-    setIsLoadingAd(true);
-    // Simulate ad viewing
-    setTimeout(() => {
-      setIsLoadingAd(false);
+    showAd(() => {
       setIsUnlocked(true);
-    }, 2000);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,10 +32,10 @@ export default function RequestPage() {
     setMessage('');
     setError('');
 
-    const { data, error: reqError } = await submitRequest(movieName, language);
+    const result = await submitRequest(movieName, language);
     
-    if (reqError) {
-      setError(reqError.message || 'Failed to submit request');
+    if (result.error) {
+      setError(result.error.message || 'Failed to submit request');
     } else {
       setMessage('Request submitted successfully!');
       setMovieName('');
@@ -81,7 +78,7 @@ export default function RequestPage() {
               )}
             </div>
 
-            <AdUnlock isUnlocked={isUnlocked} isLoading={isLoadingAd} onUnlock={handleUnlock} />
+            <AdUnlock isUnlocked={isUnlocked} onUnlock={handleUnlock} />
 
             {message && <p className="text-green-500 text-sm text-center">{message}</p>}
             {error && <p className="text-accent-red text-sm text-center">{error}</p>}

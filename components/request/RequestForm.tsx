@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { AdUnlock } from './AdUnlock';
 import { useAdUnlock } from '@/hooks/useAdUnlock';
 import { submitRequest } from '@/lib/api';
-import { showRewardedInterstitial } from '@/lib/monetag';
+import { showAd } from '@/lib/monetag';
 import { useLanguages } from '@/hooks/useLanguages';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +16,7 @@ export function RequestForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { isUnlocked, isLoading: adLoading, watchAd, reset } = useAdUnlock();
+  const { isUnlocked, watchAd, reset } = useAdUnlock();
   const { languages, loading: langLoading } = useLanguages();
 
   useEffect(() => {
@@ -29,39 +29,20 @@ export function RequestForm() {
     return () => clearTimeout(timeout);
   }, [showSuccess]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!movieName.trim() || !language) return
     if (!isUnlocked) return
     setIsSubmitting(true)
 
-    try {
-      // Show rewarded interstitial before submitting
-      await showRewardedInterstitial()
-
-      // Then submit the request to database
-      const result = await submitRequest(
-        movieName.trim(),
-        language
-      )
-
-      if (result.error) {
-        setError(result.error.message)
-        return
-      }
-
-      // Success — reset everything
-      reset() // reset ad unlock
+    showAd(() => {
+      submitRequest(movieName.trim(), language)
+      setShowSuccess(true)
+      reset() // isUnlocked = false
       setMovieName('')
       setLanguage('')
-      setError(null)
-      setShowSuccess(true)
-
-    } catch {
-      setError('Failed to submit. Please try again.')
-    } finally {
       setIsSubmitting(false)
-    }
+    })
   }
 
   return (
@@ -126,7 +107,7 @@ export function RequestForm() {
 
           {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
 
-          <AdUnlock isUnlocked={isUnlocked} isLoading={adLoading} onUnlock={watchAd} />
+          <AdUnlock isUnlocked={isUnlocked} onUnlock={watchAd} />
 
           <button 
             type="submit"
