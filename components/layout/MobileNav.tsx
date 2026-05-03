@@ -4,9 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Film, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { showRewardedPopup } from '@/lib/monetag';
 
 export function MobileNav() {
   const pathname = usePathname();
+
+  const router = useRouter();
+  const lastAdTime = useRef<number>(0);
+  const AD_COOLDOWN = 3 * 60 * 1000; // 3 minutes
 
   const navLinks = [
     { name: 'Home', href: '/', icon: Home },
@@ -14,17 +21,34 @@ export function MobileNav() {
     { name: 'Request', href: '/request', icon: PlusCircle },
   ];
 
+  async function handleNavClick(tabName: string, href: string) {
+    router.push(href);
+
+    // Show popup ad only on Movies and Request tabs
+    if (tabName === 'Movies' || tabName === 'Request') {
+      const now = Date.now();
+      if (now - lastAdTime.current > AD_COOLDOWN) {
+        lastAdTime.current = now;
+        try {
+          await showRewardedPopup();
+        } catch {
+          // Silently fail, navigation already happened
+        }
+      }
+    }
+  }
+
   return (
     <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50 bg-black/70 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-around h-14 shadow-2xl">
       {navLinks.map((link) => {
         const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
         const Icon = link.icon;
         return (
-          <Link 
+          <div 
             key={link.name} 
-            href={link.href}
+            onClick={() => handleNavClick(link.name, link.href)}
             className={cn(
-              "flex flex-col items-center justify-center w-full h-full space-y-1 relative",
+              "flex flex-col items-center justify-center w-full h-full space-y-1 relative cursor-pointer",
               isActive ? "text-accent-red" : "text-text-secondary"
             )}
           >
@@ -33,7 +57,7 @@ export function MobileNav() {
             {isActive && (
               <span className="absolute bottom-1 w-1 h-1 rounded-full bg-accent-red" />
             )}
-          </Link>
+          </div>
         );
       })}
     </nav>

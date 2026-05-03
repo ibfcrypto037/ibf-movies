@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useAdUnlock } from '@/hooks/useAdUnlock';
 import { Toast } from '@/components/ui/Toast';
+import { showRewardedInterstitial } from '@/lib/monetag';
 
 export function DownloadButtons({ links }: { links: DownloadLinks }) {
   const [loading, setLoading] = useState<DownloadQuality | null>(null);
@@ -14,17 +15,16 @@ export function DownloadButtons({ links }: { links: DownloadLinks }) {
   const { watchAd } = useAdUnlock();
 
   const handleDownload = async (quality: DownloadQuality, url: string) => {
-    if (!url || url === '#' || url.trim() === '') {
+    if (!url || url === '#' || url === '') {
       setToast({ message: 'Download link not available', type: 'error', isVisible: true });
       return;
     }
-
     setLoading(quality);
     try {
-      await watchAd();
+      await showRewardedInterstitial();
       window.open(url, '_blank', 'noopener,noreferrer');
-    } catch (error) {
-      console.error('Error showing ad:', error);
+    } catch {
+      window.open(url, '_blank', 'noopener,noreferrer');
     } finally {
       setLoading(null);
     }

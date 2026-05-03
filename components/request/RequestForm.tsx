@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AdUnlock } from './AdUnlock';
 import { useAdUnlock } from '@/hooks/useAdUnlock';
 import { submitRequest } from '@/lib/api';
+import { showRewardedInterstitial } from '@/lib/monetag';
 import { useLanguages } from '@/hooks/useLanguages';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,38 +13,56 @@ export function RequestForm() {
   const [movieName, setMovieName] = useState('');
   const [language, setLanguage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { isUnlocked, isLoading: adLoading, watchAd, reset } = useAdUnlock();
   const { languages, loading: langLoading } = useLanguages();
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    if (isSuccess) {
+    if (showSuccess) {
       timeout = setTimeout(() => {
-        setIsSuccess(false);
-        setMovieName('');
-        setLanguage('');
-        reset();
+        setShowSuccess(false);
       }, 3000);
     }
     return () => clearTimeout(timeout);
-  }, [isSuccess, reset]);
+  }, [showSuccess]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!isUnlocked || !movieName || !language) return;
+    if (!movieName.trim() || !language) return
+    if (!isUnlocked) return
+    setIsSubmitting(true)
 
-    setIsSubmitting(true);
-    const { error } = await submitRequest(movieName, language);
-    setIsSubmitting(false);
-    
-    if (!error) {
-      setIsSuccess(true);
-    } else {
-      alert(error.message);
+    try {
+      // Show rewarded interstitial before submitting
+      await showRewardedInterstitial()
+
+      // Then submit the request to database
+      const result = await submitRequest(
+        movieName.trim(),
+        language
+      )
+
+      if (result.error) {
+        setError(result.error.message)
+        return
+      }
+
+      // Success — reset everything
+      reset() // reset ad unlock
+      setMovieName('')
+      setLanguage('')
+      setError(null)
+      setShowSuccess(true)
+
+    } catch {
+      setError('Failed to submit. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="bg-[#111111] border border-white/10 p-6 md:p-8 rounded-2xl max-w-md mx-auto shadow-2xl relative overflow-hidden">
@@ -51,7 +70,7 @@ export function RequestForm() {
       
       <div className="relative z-10">
         <AnimatePresence>
-          {isSuccess && (
+          {showSuccess && (
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -104,6 +123,8 @@ export function RequestForm() {
               </select>
             )}
           </div>
+
+          {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
 
           <AdUnlock isUnlocked={isUnlocked} isLoading={adLoading} onUnlock={watchAd} />
 

@@ -3,19 +3,27 @@
 import { Heart } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { showRewardedInterstitial } from '@/lib/monetag';
 import { useAdUnlock } from '@/hooks/useAdUnlock';
 
 export function SupportButton() {
   const [showThanks, setShowThanks] = useState(false);
   const { watchAd } = useAdUnlock();
 
+  const [isLoading, setIsLoading] = useState(false);
+  
   const handleSupport = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
-      await watchAd();
+      await showRewardedInterstitial();
       setShowThanks(true);
       setTimeout(() => setShowThanks(false), 4000);
-    } catch (error) {
-      console.error('Error watching ad:', error);
+    } catch {
+      setShowThanks(true);
+      setTimeout(() => setShowThanks(false), 4000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,7 +51,7 @@ export function SupportButton() {
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             className="absolute flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 text-white font-bold shadow-[0_0_20px_rgba(34,197,94,0.4)]"
           >
-            🙏 Thank you for your support!
+            🙏 Thank you for supporting IbfMovies!
           </motion.div>
         )}
       </AnimatePresence>

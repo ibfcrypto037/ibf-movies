@@ -5,9 +5,16 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Search, Film, Home, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { showRewardedPopup } from '@/lib/monetag';
 
 export function Navbar() {
   const pathname = usePathname();
+
+  const router = useRouter();
+  const lastAdTime = useRef<number>(0);
+  const AD_COOLDOWN = 3 * 60 * 1000; // 3 minutes
 
   if (pathname.startsWith('/admin')) return null;
 
@@ -16,6 +23,23 @@ export function Navbar() {
     { name: 'Movies', href: '/movies', icon: Film },
     { name: 'Request', href: '/request', icon: PlusCircle },
   ];
+
+  async function handleNavClick(tabName: string, href: string) {
+    router.push(href);
+
+    // Show popup ad only on Movies and Request tabs
+    if (tabName === 'Movies' || tabName === 'Request') {
+      const now = Date.now();
+      if (now - lastAdTime.current > AD_COOLDOWN) {
+        lastAdTime.current = now;
+        try {
+          await showRewardedPopup();
+        } catch {
+          // Silently fail, navigation already happened
+        }
+      }
+    }
+  }
 
   return (
     <nav className="hidden md:flex sticky top-0 z-50 bg-black/40 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20 h-12">
@@ -43,9 +67,9 @@ export function Navbar() {
             const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
             const Icon = link.icon;
             return (
-              <Link 
+              <button 
                 key={link.name} 
-                href={link.href}
+                onClick={() => handleNavClick(link.name, link.href)}
                 className={cn(
                   "flex items-center gap-2 text-sm font-medium transition-colors hover:text-accent-red",
                   isActive ? "text-accent-red" : "text-text-secondary"
@@ -53,7 +77,7 @@ export function Navbar() {
               >
                 <Icon size={16} />
                 {link.name}
-              </Link>
+              </button>
             );
           })}
         </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { showRewardedInterstitial } from '@/lib/monetag';
 
 export function useAdUnlock() {
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -6,11 +7,17 @@ export function useAdUnlock() {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const watchAd = async () => {
-    setIsLoading(true);
-    // Simulate watching an ad
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsUnlocked(true);
-    setIsLoading(false);
+    if (isLoading || isUnlocked) return
+    setIsLoading(true)
+    try {
+      await showRewardedInterstitial()
+      setIsUnlocked(true)
+    } catch {
+      // Start 5 second fallback timer
+      setTimeLeft(5)
+    } finally {
+      setIsLoading(false)
+    }
   };
 
   const reset = () => {
